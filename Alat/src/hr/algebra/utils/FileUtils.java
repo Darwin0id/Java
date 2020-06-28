@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Random;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -31,6 +32,11 @@ public class FileUtils {
     private static final String TEXT_DOCUMENTSTXT = "Text documents(*.txt)";
     private static final String SAVE = "Save";
     private static final String TXT = "txt";
+    
+    private static final String EXT_JPG = ".jpg";
+    private static final String EXT_JPEG = ".jpeg";
+    
+    private static final Random RANDOM = new Random();
     
     public static File uploadFile(String description, String...extensions) {
         JFileChooser chooser = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
@@ -114,5 +120,18 @@ public class FileUtils {
         }
         
         return Optional.empty();
+    }
+    
+    public static String handlePicture(Object movie, String pictureUrl, String folderPath) throws IOException {
+        String ext = pictureUrl.substring(pictureUrl.lastIndexOf("."));
+        if (ext.length() > 4 && ext.equals(EXT_JPEG)) {
+            ext = EXT_JPEG;
+        } else {
+            ext = EXT_JPG;
+        }
+        String pictureName = Math.abs(RANDOM.nextInt()) + ext;
+        String localPicturePath = folderPath + File.separator + pictureName;
+        FileUtils.copyFromUrl(pictureUrl.replaceAll("http", "https"), localPicturePath);
+        return localPicturePath;
     }
 }

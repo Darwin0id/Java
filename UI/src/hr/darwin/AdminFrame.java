@@ -5,6 +5,8 @@
  */
 package hr.darwin;
 
+import hr.darwin.component.GetMoviesPanel;
+
 /**
  *
  * @author darwin
@@ -32,17 +34,19 @@ public class AdminFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        tpContent = new javax.swing.JTabbedPane();
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 900, Short.MAX_VALUE)
+            .addComponent(tpContent, javax.swing.GroupLayout.DEFAULT_SIZE, 900, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 850, Short.MAX_VALUE)
+            .addComponent(tpContent, javax.swing.GroupLayout.DEFAULT_SIZE, 850, Short.MAX_VALUE)
         );
 
         pack();
@@ -82,15 +86,13 @@ public class AdminFrame extends javax.swing.JFrame {
             }
         });
     }
-    
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTabbedPane tpContent;
-    // End of variables declaration//GEN-END:variables
+             
 
     private void configurePanel() {
-        //tpContent.add(GET_MOVIES, new UploadMoviePanel());
+        tpContent.add(GET_MOVIES, new GetMoviesPanel());
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTabbedPane tpContent;
     // End of variables declaration//GEN-END:variables
 }

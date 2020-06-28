@@ -81,3 +81,361 @@ CREATE TABLE Genre
 	Active BIT DEFAULT 1
 )
 /* -------------------------------------- */
+
+GO
+
+/* ----------- TABLICA: ŽANR ------------ */
+CREATE TABLE EmployeeRole
+(
+	IDRole INT PRIMARY KEY IDENTITY,
+	Name NVARCHAR(50)
+)
+GO
+INSERT INTO EmployeeRole (Name) VALUES ('Redatelj'), ('Glumac')
+/* -------------------------------------- */
+
+GO
+
+/* ----------- TABLICA: ŽANR ------------ */
+CREATE TABLE Employee
+(
+	IDEmployee INT PRIMARY KEY IDENTITY,
+	FirstName NVARCHAR(50),
+	LastName NVARCHAR(50),
+	Active BIT,
+	RoleID INT FOREIGN KEY REFERENCES EmployeeRole(IDRole)
+)
+/* -------------------------------------- */
+
+GO
+
+/* ----------- TABLICA: ŽANR ------------ */
+CREATE TABLE Movie
+(
+	IDMovie INT PRIMARY KEY IDENTITY,
+	Title NVARCHAR(100),
+	Description NVARCHAR(500),
+	Duration INT,
+	ImagePath NVARCHAR(100),
+	Active BIT
+)
+GO
+CREATE PROCEDURE selectMovies
+AS
+SELECT DISTINCT m.IDMovie AS ID, m.Title AS Naslov, m.Description AS Opis, m.ImagePath AS Slika, m.Duration AS Trajanje 
+FROM Movie AS m WHERE m.Active = 1
+GO
+CREATE PROCEDURE selectGenresByMovieID
+	@MovieID INT
+AS
+SELECT g.IDGenre AS IDZanr, g.Name AS Zanr FROM GenreMovie AS gm
+INNER JOIN Genre AS g ON gm.GenreID = g.IDGenre
+WHERE gm.MovieID = @MovieID
+GO
+CREATE PROCEDURE createMovies
+	@Title NVARCHAR(50),
+	@Description NVARCHAR(500),
+	@Duration INT,
+	@Picture NVARCHAR(50),
+	@ID INT OUT
+AS
+BEGIN
+	IF EXISTS (SELECT Title FROM Movie WHERE Title = @Title AND Description = @Description AND Duration = @Duration AND ImagePath = @Picture AND Active = 1)
+		BEGIN
+			SET @ID = 0
+			RETURN (1)
+		END
+	ELSE
+		BEGIN
+			INSERT INTO Movie (Title, Description, Duration, ImagePath, Active) VALUES (@Title, @Description, @Duration, @Picture, 1)
+			SET @ID = @@identity
+			RETURN (2)
+		END
+END
+/* -------------------------------------- */
+
+GO
+
+/* ----------- TABLICA: ŽANR ------------ */
+CREATE TABLE GenreMovie
+(
+	IDGenreMovie INT PRIMARY KEY IDENTITY,
+	MovieID INT FOREIGN KEY REFERENCES Movie(IDMovie),
+	GenreID INT FOREIGN KEY REFERENCES Genre(IDGenre) 
+)
+/* -------------------------------------- */
+
+GO
+
+/* -------------------------------------- */
+CREATE TABLE EmployeeMovie
+(
+	IDEmployeeMovie INT PRIMARY KEY IDENTITY,
+	MovieID INT FOREIGN KEY REFERENCES Movie(IDMovie),
+	EmployeeID INT FOREIGN KEY REFERENCES Employee(IDEmployee)
+)
+GO
+CREATE PROCEDURE selectActrosByMovieID
+	@MovieID INT
+AS
+SELECT e.IDEmployee AS IDGlumac, e.FirstName AS GlumacIme, e.LastName AS GlumacPrezime FROM Employee AS e
+INNER JOIN EmployeeMovie AS em ON e.IDEmployee = em.EmployeeID
+WHERE em.MovieID = @MovieID AND e.RoleID = 2 AND e.Active = 1
+GO
+CREATE PROCEDURE selectDirectorsByMovieID
+	@MovieID INT
+AS
+SELECT e.IDEmployee AS IDRedatelj, e.FirstName AS RedateljIme, e.LastName AS RedateljPrezime FROM Employee AS e
+INNER JOIN EmployeeMovie AS em ON e.IDEmployee = em.EmployeeID
+WHERE em.MovieID = @MovieID AND e.RoleID = 1 AND e.Active = 1
+GO
+CREATE PROCEDURE createActors
+	@FirstName NVARCHAR(50),
+	@LastName NVARCHAR(50),
+	@ActorID INT OUT
+AS
+IF EXISTS (SELECT IDEmployee FROM Employee WHERE FirstName = @FirstName AND LastName = @LastName AND Active = 1 AND RoleID = 2)
+	BEGIN
+		SET @ActorID = (SELECT IDEmployee FROM Employee WHERE FirstName = @FirstName AND LastName = @LastName AND Active = 1 AND RoleID = 2)
+		RETURN (1)
+	END
+ELSE IF NOT EXISTS (SELECT IDEmployee FROM Employee WHERE FirstName = @FirstName AND LastName = @LastName AND Active = 1 AND RoleID = 2)
+	BEGIN
+		INSERT INTO Employee(FirstName, LastName, RoleID, Active) VALUES (@FirstName, @LastName, 2, 1) 
+		SET @ActorID = @@identity
+		RETURN (2)
+	END
+ELSE IF EXISTS (SELECT IDEmployee FROM Employee WHERE FirstName = @FirstName AND LastName = @LastName AND Active = 1 AND RoleID = 1)
+	BEGIN
+		SET @ActorID = (SELECT IDEmployee FROM Employee WHERE FirstName = @FirstName AND LastName = @LastName AND Active = 1 AND RoleID = 1)
+		RETURN (3)
+	END
+ELSE
+	BEGIN
+		INSERT INTO Employee(FirstName, LastName, RoleID, Active) VALUES (@FirstName, @LastName, 2, 1)
+		SET @ActorID = @@identity
+		RETURN (4)
+	END
+GO
+CREATE PROCEDURE createMovieActor
+	@MovieID INT,
+	@ActorID INT
+AS
+INSERT INTO EmployeeMovie(MovieID, EmployeeID) VALUES (@MovieID, @ActorID)
+GO
+/* -------------------------------------- */
+CREATE PROCEDURE createGenres
+	@Name NVARCHAR(50),
+	@GenreID INT OUT
+AS
+IF EXISTS (SELECT IDGenre FROM Genre WHERE Name = @Name AND Active = 1)
+	BEGIN
+		SET @GenreID = (SELECT IDGenre FROM Genre WHERE Name = @Name AND Active = 1)
+		RETURN (1)
+	END
+ELSE
+	BEGIN
+		INSERT INTO Genre(Name, Active) VALUES (@Name, 1)
+		SET @GenreID = @@identity
+		RETURN (2)
+	END
+GO
+CREATE PROCEDURE createMovieGenre
+	@MovieID INT,
+	@GenreID INT
+AS
+INSERT INTO GenreMovie(MovieID, GenreID) VALUES (@MovieID, @GenreID)
+GO 
+CREATE PROCEDURE createDirectors
+	@FirstName NVARCHAR(50),
+	@LastName NVARCHAR(50),
+	@DirectorID INT OUT
+AS
+IF EXISTS (SELECT IDEmployee FROM Employee WHERE FirstName = @FirstName AND LastName = @LastName AND Active = 1 AND RoleID = 1)
+	BEGIN
+		SET @DirectorID = (SELECT IDEmployee FROM Employee WHERE FirstName = @FirstName AND LastName = @LastName AND Active = 1 AND RoleID = 1)
+		RETURN (1)
+	END
+ELSE IF NOT EXISTS (SELECT IDEmployee FROM Employee WHERE FirstName = @FirstName AND LastName = @LastName AND Active = 1 AND RoleID = 1)
+	BEGIN
+		INSERT INTO Employee(FirstName, LastName, RoleID, Active) VALUES (@FirstName, @LastName, 1, 1)
+		SET @DirectorID = @@identity
+		RETURN (2)
+	END
+ELSE IF EXISTS (SELECT IDEmployee FROM Employee WHERE FirstName = @FirstName AND LastName = @LastName AND Active = 1 AND RoleID = 2)
+	BEGIN
+		SET @DirectorID = (SELECT IDEmployee FROM Employee WHERE FirstName = @FirstName AND LastName = @LastName AND Active = 1 AND RoleID = 2)
+		RETURN (3)
+	END
+ELSE
+	BEGIN
+		INSERT INTO Employee(FirstName, LastName, RoleID, Active) VALUES (@FirstName, @LastName, 1, 1)
+		SET @DirectorID = @@identity
+		RETURN (4)
+	END
+GO
+
+CREATE PROCEDURE createMovieDirector
+	@MovieID INT,
+	@DirectorID INT
+AS
+INSERT INTO EmployeeMovie(MovieID, EmployeeID) VALUES (@MovieID, @DirectorID)
+GO
+CREATE PROCEDURE deleteMovies
+AS
+UPDATE Movie SET Active = 0
+GO
+CREATE PROCEDURE selectActors
+AS
+SELECT IDEmployee AS IDGlumac, FirstName AS GlumacIme, LastName AS GlumacPrezime FROM Employee WHERE Active = 1 AND RoleID = 2
+GO
+CREATE PROCEDURE createActor
+	@FirstName NVARCHAR(50),
+	@LastName NVARCHAR(50),
+	@ID INT OUT
+AS
+IF EXISTS (SELECT IDEmployee FROM Employee WHERE FirstName = @FirstName AND LastName = @LastName AND Active = 1 AND RoleID = 2)
+	BEGIN
+		SET @ID = 0
+		RETURN (1)
+	END
+ELSE IF (LEN(@FirstName) > 0 AND LEN(@LastName) > 0)
+	BEGIN
+		INSERT INTO Employee(FirstName, LastName, RoleID, Active) VALUES (@FirstName, @LastName, 2, 1)
+		SET @ID = @@identity
+		RETURN (2)
+	END
+GO
+CREATE PROCEDURE selectDirectors
+AS
+SELECT IDEmployee AS IDRedatelj, FirstName AS RedateljIme, LastName AS RedateljPrezime FROM Employee WHERE Active = 1 AND RoleID = 1
+GO
+CREATE PROCEDURE createDirector
+	@FirstName NVARCHAR(50),
+	@LastName NVARCHAR(50),
+	@ID INT OUT
+AS
+IF EXISTS (SELECT IDEmployee FROM Employee WHERE FirstName = @FirstName AND LastName = @LastName AND Active = 1 AND RoleID = 1)
+	BEGIN
+		SET @ID = 0
+		RETURN (1)
+	END
+ELSE
+	BEGIN
+		INSERT INTO Employee(FirstName, LastName, RoleID, Active) VALUES (@FirstName, @LastName, 1, 1)
+		SET @ID = @@identity
+		RETURN (2)
+	END
+GO
+CREATE PROCEDURE selectGenres
+AS
+SELECT IDGenre AS IDZanr, Name AS Zanr FROM Genre WHERE Active = 1
+GO
+CREATE PROCEDURE createGenre
+	@Name NVARCHAR(50),
+	@GenreID INT OUT
+AS
+IF EXISTS (SELECT IDGenre FROM Genre WHERE Name = @Name AND Active = 1)
+	BEGIN
+		SET @GenreID = 0
+		RETURN (1)
+	END
+ELSE
+	BEGIN
+		INSERT INTO Genre(Name, Active) VALUES (@Name, 1)
+		SET @GenreID = @@identity
+		RETURN (2)
+	END
+GO
+CREATE PROCEDURE selectGenre
+	@IDGenre INT
+AS
+SELECT IDGenre AS IDZanr, Name AS Zanr FROM Genre WHERE IDGenre = @IDGenre AND Active = 1
+GO
+CREATE PROCEDURE deleteGenre
+	@IDGenre INT,
+	@ID INT OUT
+AS
+UPDATE Genre SET Active = 0 WHERE IDGenre = @IDGenre
+SET @ID = 0
+GO
+CREATE PROCEDURE updateGenre
+	@IDGenre INT,
+	@Name NVARCHAR(50),
+	@ID INT OUT
+AS
+UPDATE Genre SET Name = @Name WHERE IDGenre = @IDGenre AND Active = 1
+SET @ID = 0
+GO
+CREATE PROCEDURE selectMovie
+	@IDMovie INT
+AS
+SELECT IDMovie AS ID, Title AS Naslov, Description AS Opis, Duration AS Trajanje, ImagePath AS Slika FROM Movie WHERE IDMovie = @IDMovie AND Active = 1
+GO
+CREATE PROCEDURE createMovie
+	@Title NVARCHAR(50),
+	@Description NVARCHAR(50),
+	@Duration INT,
+	@ImagePath NVARCHAR(100),
+	@IDMovie INT OUT
+AS
+IF EXISTS (SELECT IDMovie FROM Movie WHERE Title = @Title AND Description = @Description AND Duration = @Duration AND Active = 1)
+	BEGIN
+		SET @IDMovie = 0
+		RETURN (1)
+	END	
+ELSE
+	BEGIN
+		INSERT INTO Movie(Title, Description, Duration, ImagePath, Active) VALUES (@Title, @Description, @Duration, @ImagePath, 1)
+		SET @IDMovie = @@identity
+		RETURN (2)
+	END	
+GO
+CREATE PROCEDURE deleteMovie
+	@IDMovie INT,
+	@ID INT OUT
+AS
+UPDATE Movie SET Active = 0 WHERE IDMovie = @IDMovie
+SET @ID = 0
+GO
+CREATE PROCEDURE updateMovie
+	@IDMovie INT,
+	@Title NVARCHAR(50),
+	@Description NVARCHAR(50),
+	@Duration INT,
+	@ImagePath NVARCHAR(100)
+AS
+UPDATE Movie SET Title = @Title, Description = @Description, Duration = @Duration, ImagePath = @ImagePath WHERE IDMovie = @IDMovie
+GO
+CREATE PROCEDURE selectMoviesTitle
+AS
+SELECT DISTINCT Title FROM Movie WHERE Active = 1
+GO
+CREATE PROCEDURE selectEmployee
+AS
+SELECT DISTINCT e.IDEmployee AS IDDjelatnik, e.FirstName AS Ime, e.LastName AS Prezime, er.Name AS Tip FROM Employee AS e
+INNER JOIN EmployeeRole AS er ON e.RoleID = er.IDRole
+WHERE Active = 1
+GO
+CREATE PROCEDURE selectPerson
+	@IDPerson INT
+AS
+SELECT e.IDEmployee AS IDDjelatnik, e.FirstName AS Ime, e.LastName AS Prezime, er.Name AS Tip FROM Employee AS e
+INNER JOIN EmployeeRole AS er ON e.RoleID = er.IDRole
+WHERE e.IDEmployee = @IDPerson
+GO
+CREATE PROCEDURE updatePerson
+	@IDPerson INT,
+	@FirstName NVARCHAR(50),
+	@LastName NVARCHAR(50),
+	@NewFirstName NVARCHAR(50),
+	@NewLastName NVARCHAR(50),
+	@ID INT OUT
+AS
+IF EXISTS (SELECT IDEmployee FROM Employee WHERE IDEmployee = @IDPerson AND Active = 1)
+	BEGIN
+		UPDATE Employee SET FirstName = @NewFirstName, LastName = @NewLastName WHERE FirstName = @FirstName AND LastName = @LastName AND Active = 1
+		SET @ID = (SELECT RoleID FROM Employee WHERE IDEmployee = @IDPerson AND Active = 1)
+		RETURN (1)
+	END
+GO
