@@ -5,8 +5,8 @@
  */
 package hr.darwin.dal;
 
-import hr.darwin.handler.user.IUser;
-import hr.darwin.handler.user.UserHandler;
+import hr.darwin.repo.user.IUser;
+import hr.darwin.repo.user.UserRepo;
 
 /**
  *
@@ -18,7 +18,7 @@ public class RepositoryFactory {
     }
     
     public static IUser getUserHandler() {
-        return new UserHandler();
+        return new UserRepo();
     }
 }
 

@@ -5,14 +5,17 @@
  */
 package hr.darwin;
 
+import hr.algebra.utils.FrameUtils;
 import hr.algebra.utils.HashUtils;
 import hr.algebra.utils.MessageUtils;
 import hr.darwin.dal.RepositoryFactory;
-import hr.darwin.handler.user.IUser;
+import hr.darwin.repo.user.IUser;
+import hr.darwin.model.User;
 import java.awt.Toolkit;
 import java.awt.event.WindowEvent;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
@@ -26,7 +29,6 @@ public class LoginFrame extends javax.swing.JFrame {
     
     private List<JTextComponent> validationFields;
     private List<JLabel> errorLabels;
-    private final String ADMIN = "Admin";
     
     private IUser userHandler;
 
@@ -292,17 +294,20 @@ public class LoginFrame extends javax.swing.JFrame {
             String password = tfPassword.getText().trim();
             
             try {
-                String checkUser = userHandler.authorization(username, HashUtils.sha512String(password));
-                if (checkUser == null) {
-                     MessageUtils.showErrorMessage("Error", "Korisnik ne postoji u bazi!");
-                } else {
-                    if (checkUser.equals(ADMIN)) {
-                        //Pokrece se admin
-                        exit();
+                Optional<User> user = userHandler.authorization(username, HashUtils.sha512String(password));
+                if (user.isPresent()) {
+                    if (user.get().authentication()) {
+                        AdminFrame adminView = new AdminFrame();
+                        adminView.setVisible(true);
+                        FrameUtils.exit(this);
                     } else {
-                        //Pokrece se user
-                        exit();
+                        UserFrame userView = new UserFrame();
+                        userView.setVisible(true);
+                        FrameUtils.exit(this);
                     }
+                }   
+                else {
+                    MessageUtils.showErrorMessage("Error", "Korisnik ne postoji!");
                 }
             } catch (Exception ex) {
                 Logger.getLogger(LoginFrame.class.getName()).log(Level.SEVERE, null, ex);
@@ -318,7 +323,7 @@ public class LoginFrame extends javax.swing.JFrame {
             try {
                 int checkUser = userHandler.createUser(username, HashUtils.sha512String(password));
                 if (checkUser == 0) {
-                     MessageUtils.showErrorMessage("Error", "Korisnik već postoji");
+                     MessageUtils.showErrorMessage("Error", "Korisnik već postoji!");
                 } else {
                     MessageUtils.showInformationMessage("Successful", "Uspješno ste registrirani!");
                 }
@@ -407,12 +412,7 @@ public class LoginFrame extends javax.swing.JFrame {
             e.printStackTrace();
         }
     }
-    
-    private void exit() {
-        WindowEvent winClosingEvent = new WindowEvent(this,WindowEvent.WINDOW_CLOSING);
-        Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(winClosingEvent);
-    }
-    
+        
       private void initValidation() {
         validationFields = Arrays.asList(tfUserName, tfPassword);
         errorLabels = Arrays.asList(lblUserNameError, lblPasswordError);
