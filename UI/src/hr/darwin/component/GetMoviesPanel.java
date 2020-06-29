@@ -58,31 +58,50 @@ public class GetMoviesPanel extends javax.swing.JPanel {
         btnXML = new javax.swing.JButton();
         btnUpload = new javax.swing.JButton();
         btnDelete1 = new javax.swing.JButton();
+        leftSide = new javax.swing.JPanel();
 
         setPreferredSize(new java.awt.Dimension(900, 773));
 
+        lsMovie.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(236, 97, 97), 2));
         jScrollPane1.setViewportView(lsMovie);
 
         btnXML.setText("Download XML entity");
+        btnXML.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(236, 97, 97), 2));
         btnXML.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnXMLActionPerformed(evt);
             }
         });
 
-        btnUpload.setText("Upload movies");
+        btnUpload.setBackground(new java.awt.Color(236, 97, 97));
+        btnUpload.setForeground(new java.awt.Color(255, 255, 255));
+        btnUpload.setText("Dohvati filmove");
         btnUpload.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnUploadActionPerformed(evt);
             }
         });
 
-        btnDelete1.setText("Delete movies");
+        btnDelete1.setText("Obriši označen film");
+        btnDelete1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(236, 97, 97), 2));
         btnDelete1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnDelete1ActionPerformed(evt);
             }
         });
+
+        leftSide.setBackground(new java.awt.Color(236, 97, 97));
+
+        javax.swing.GroupLayout leftSideLayout = new javax.swing.GroupLayout(leftSide);
+        leftSide.setLayout(leftSideLayout);
+        leftSideLayout.setHorizontalGroup(
+            leftSideLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        leftSideLayout.setVerticalGroup(
+            leftSideLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 13, Short.MAX_VALUE)
+        );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -91,24 +110,29 @@ public class GetMoviesPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(btnXML, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnUpload, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 880, Short.MAX_VALUE)
-                    .addComponent(btnDelete1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(leftSide, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(btnUpload, javax.swing.GroupLayout.PREFERRED_SIZE, 295, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(btnDelete1, javax.swing.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnXML, javax.swing.GroupLayout.PREFERRED_SIZE, 282, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane1))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 647, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(leftSide, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 302, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(btnUpload, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnDelete1, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnXML, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnUpload, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnDelete1, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnXML, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(22, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -153,6 +177,7 @@ public class GetMoviesPanel extends javax.swing.JPanel {
     private javax.swing.JButton btnUpload;
     private javax.swing.JButton btnXML;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPanel leftSide;
     private javax.swing.JList<Movie> lsMovie;
     // End of variables declaration//GEN-END:variables
 
@@ -162,7 +187,7 @@ public class GetMoviesPanel extends javax.swing.JPanel {
             movieModel = new DefaultListModel();
             loadModel();
         } catch (Exception e) {
-            MessageUtils.showErrorMessage("Unrecoverable error", "Cannot initiate the form");
+            MessageUtils.showErrorMessage("Smrt", "Pokoj dusi javi");
             System.exit(1);
         }
     }

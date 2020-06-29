@@ -6,12 +6,14 @@
 package hr.darwin.component;
 
 import hr.algebra.utils.FrameUtils;
-import hr.darwin.LoginFrame;
 import hr.darwin.UserFrame;
 import hr.darwin.dal.RepositoryFactory;
 import hr.algebra.utils.MessageUtils;
-import java.awt.Toolkit;
-import java.awt.event.WindowEvent;
+import hr.darwin.handler.actor.IActor;
+import hr.darwin.handler.director.IDirector;
+import hr.darwin.model.Actor;
+import hr.darwin.model.ActorTableModel;
+import hr.darwin.model.Director;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +37,13 @@ public class EditPerson extends javax.swing.JFrame {
     private static final String REDATELJ = "Redatelj";
     private static final String GLUMAC = "Glumac";
     
-    private final String[] cbItem = {"Director", "Actor"};
+    private final String[] cbItem = {REDATELJ, GLUMAC};
+    
+    private IActor actorHandler;
+    private IDirector directorHandler;
+
+    private ActorTableModel personTableModel;
+    private Actor selectedPerson;
        
     /**
      * Creates new form EditActor
@@ -66,14 +74,12 @@ public class EditPerson extends javax.swing.JFrame {
         tbPerson = new javax.swing.JTable();
         jLabel4 = new javax.swing.JLabel();
         cbType = new javax.swing.JComboBox<>();
+        jPanel1 = new javax.swing.JPanel();
         jMenuBar1 = new javax.swing.JMenuBar();
         menuEdit = new javax.swing.JMenu();
         miEditMovie = new javax.swing.JMenuItem();
         miEditActor = new javax.swing.JMenuItem();
         miEditGenre = new javax.swing.JMenuItem();
-        menuAction = new javax.swing.JMenu();
-        miLogout = new javax.swing.JMenuItem();
-        miExit = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -82,32 +88,36 @@ public class EditPerson extends javax.swing.JFrame {
             }
         });
 
-        jLabel1.setText("Firstname");
+        jLabel1.setText("Ime");
 
         lblFirstNameError.setForeground(new java.awt.Color(255, 0, 0));
 
-        btnAdd.setText("Add");
+        btnAdd.setBackground(new java.awt.Color(236, 97, 97));
+        btnAdd.setForeground(new java.awt.Color(255, 255, 255));
+        btnAdd.setText("Dodaj");
         btnAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnAddActionPerformed(evt);
             }
         });
 
-        btnUpdate.setText("Update");
+        btnUpdate.setText("Ažuriraj");
+        btnUpdate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(236, 97, 97), 2));
         btnUpdate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnUpdateActionPerformed(evt);
             }
         });
 
-        btnDelete.setText("Delete");
+        btnDelete.setText("Obriši");
+        btnDelete.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(236, 97, 97), 2));
         btnDelete.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnDeleteActionPerformed(evt);
             }
         });
 
-        jLabel3.setText("Lastname");
+        jLabel3.setText("Prezime");
 
         lblLastNameError.setForeground(new java.awt.Color(255, 51, 51));
 
@@ -134,12 +144,25 @@ public class EditPerson extends javax.swing.JFrame {
         });
         jScrollPane1.setViewportView(tbPerson);
 
-        jLabel4.setText("Type");
+        jLabel4.setText("Tip");
 
-        menuEdit.setText("Edit");
+        jPanel1.setBackground(new java.awt.Color(236, 97, 97));
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 705, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 17, Short.MAX_VALUE)
+        );
+
+        menuEdit.setText("Uredi");
 
         miEditMovie.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.CTRL_MASK));
-        miEditMovie.setText("Edit Movie");
+        miEditMovie.setText("Film");
         miEditMovie.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 miEditMovieActionPerformed(evt);
@@ -148,11 +171,11 @@ public class EditPerson extends javax.swing.JFrame {
         menuEdit.add(miEditMovie);
 
         miEditActor.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
-        miEditActor.setText("Edit Person");
+        miEditActor.setText("Glumci");
         menuEdit.add(miEditActor);
 
         miEditGenre.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.CTRL_MASK));
-        miEditGenre.setText("Edit Genre");
+        miEditGenre.setText("Žanr");
         miEditGenre.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 miEditGenreActionPerformed(evt);
@@ -161,28 +184,6 @@ public class EditPerson extends javax.swing.JFrame {
         menuEdit.add(miEditGenre);
 
         jMenuBar1.add(menuEdit);
-
-        menuAction.setText("Action");
-
-        miLogout.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
-        miLogout.setText("Logout");
-        miLogout.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miLogoutActionPerformed(evt);
-            }
-        });
-        menuAction.add(miLogout);
-
-        miExit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_MASK));
-        miExit.setText("Exit");
-        miExit.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miExitActionPerformed(evt);
-            }
-        });
-        menuAction.add(miExit);
-
-        jMenuBar1.add(menuAction);
 
         setJMenuBar(jMenuBar1);
 
@@ -197,58 +198,64 @@ public class EditPerson extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jScrollPane1)
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(btnAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(btnUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(jLabel1)
-                                    .addComponent(jLabel3))
-                                .addGap(10, 10, 10)
-                                .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(btnAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(0, 0, Short.MAX_VALUE)))
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(tfFirstName, javax.swing.GroupLayout.PREFERRED_SIZE, 435, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(jLabel1)
+                                        .addGap(0, 682, Short.MAX_VALUE))
+                                    .addComponent(tfFirstName))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lblFirstNameError))
+                                .addComponent(lblFirstNameError, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jLabel4)
+                            .addComponent(jLabel3)
+                            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(tfLastName, javax.swing.GroupLayout.PREFERRED_SIZE, 435, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lblLastNameError))
-                            .addComponent(cbType, javax.swing.GroupLayout.PREFERRED_SIZE, 435, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(btnUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addGap(102, 102, 102)
+                                        .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                        .addComponent(cbType, javax.swing.GroupLayout.Alignment.LEADING, 0, 705, Short.MAX_VALUE)
+                                        .addComponent(tfLastName, javax.swing.GroupLayout.Alignment.LEADING)))
+                                .addGap(12, 12, 12)
+                                .addComponent(lblLastNameError)))
                         .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(26, 26, 26)
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(tfFirstName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblFirstNameError))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblFirstNameError, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(tfFirstName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(tfLastName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblLastNameError)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(tfLastName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblLastNameError))
-                .addGap(18, 18, 18)
                 .addComponent(jLabel4)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(25, 25, 25)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnAdd)
                     .addComponent(btnUpdate)
                     .addComponent(btnDelete))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(49, Short.MAX_VALUE))
         );
 
         pack();
@@ -267,26 +274,69 @@ public class EditPerson extends javax.swing.JFrame {
     }//GEN-LAST:event_formComponentShown
 
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
-       
+        if (formValid()) {
+            try {
+                if (cbType.getSelectedIndex() == 1) {  
+                    Actor actor = new Actor(tfFirstName.getText().trim(), tfLastName.getText().trim());
+
+                    int actorCreate = actorHandler.createActor(actor);
+
+                    if (actorCreate == 0) {
+                        MessageUtils.showErrorMessage("Error", "Glumcina je u bazi!");
+                    } else {
+                        MessageUtils.showInformationMessage("Message", "Stvoren!");   
+                        personTableModel.setPersons(actorHandler.selectEmployee());
+                        clearForm();
+                    }
+                } else {
+                    Director director = new Director(tfFirstName.getText().trim(), tfLastName.getText().trim());
+                    int actorCreate = directorHandler.createDirector(director);
+
+                    if (actorCreate == 0) {
+                        MessageUtils.showErrorMessage("Error", "Redatelj postoji!");
+                    } else {
+                        MessageUtils.showInformationMessage("Message", "Stvoren!");   
+                        personTableModel.setPersons(actorHandler.selectEmployee());
+                        clearForm();
+                    }
+                }
+                                    
+            } catch (Exception e) {
+                Logger.getLogger(EditPerson.class.getName()).log(Level.SEVERE, null, e);
+                MessageUtils.showErrorMessage("Error", "Nejde brat!");
+            }                    
+        }
     }//GEN-LAST:event_btnAddActionPerformed
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
-       
+        if (formValid()) {
+           try {
+                selectedPerson.firstName = tfFirstName.getText().trim();
+                selectedPerson.lastName = tfLastName.getText().trim();
+                
+                int updatePerson = actorHandler.updatePerson(selectedPerson);
+            
+               switch (updatePerson) {
+                   case 1:
+                       MessageUtils.showInformationMessage("Message", "Doktor je ažuriran!");
+                       personTableModel.setPersons(actorHandler.selectEmployee());
+                       clearForm();
+                       break;
+                   case 2:
+                       MessageUtils.showInformationMessage("Message", "Glumac je ažuriran!");
+                       personTableModel.setPersons(actorHandler.selectEmployee());
+                       clearForm(); 
+                       break;
+                   default:
+                       MessageUtils.showInformationMessage("Message", "Nejde!");
+                       break;
+               }
+            } catch (Exception e) {
+                Logger.getLogger(EditPerson.class.getName()).log(Level.SEVERE, null, e);
+                MessageUtils.showErrorMessage("Error", "Nejde!");
+            }
+        }
     }//GEN-LAST:event_btnUpdateActionPerformed
-
-    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
-      
-    }//GEN-LAST:event_btnDeleteActionPerformed
-
-    private void miLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miLogoutActionPerformed
-        LoginFrame login = new LoginFrame();
-        login.setVisible(true);
-        FrameUtils.exit(this);
-    }//GEN-LAST:event_miLogoutActionPerformed
-
-    private void miExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miExitActionPerformed
-        FrameUtils.exit(this);
-    }//GEN-LAST:event_miExitActionPerformed
 
     private void miEditMovieActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miEditMovieActionPerformed
         UserFrame userSite = new UserFrame();
@@ -299,6 +349,22 @@ public class EditPerson extends javax.swing.JFrame {
         editGenre.setVisible(true);
         FrameUtils.exit(this);
     }//GEN-LAST:event_miEditGenreActionPerformed
+
+    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+         if (MessageUtils.showConfirmDialog("Brisanje", "Dal to stvarno želiš?") == JOptionPane.YES_OPTION) {
+            try {
+                int personDelete = actorHandler.deletePerson(selectedPerson.id);
+                if (personDelete == 0) {
+                    MessageUtils.showInformationMessage("Message", "Dodanko bananko!");
+                    personTableModel.setPersons(actorHandler.selectEmployee());
+                    clearForm();
+                }
+            } catch (Exception e) {
+                Logger.getLogger(EditPerson.class.getName()).log(Level.SEVERE, null, e);
+                MessageUtils.showErrorMessage("Error", "Ne mogu obrisat osobu!");
+            }
+        }
+    }//GEN-LAST:event_btnDeleteActionPerformed
 
     /**
      * @param args the command line arguments
@@ -345,25 +411,18 @@ public class EditPerson extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblFirstNameError;
     private javax.swing.JLabel lblLastNameError;
-    private javax.swing.JMenu menuAction;
     private javax.swing.JMenu menuEdit;
     private javax.swing.JMenuItem miEditActor;
     private javax.swing.JMenuItem miEditGenre;
     private javax.swing.JMenuItem miEditMovie;
-    private javax.swing.JMenuItem miExit;
-    private javax.swing.JMenuItem miLogout;
     private javax.swing.JTable tbPerson;
     private javax.swing.JTextField tfFirstName;
     private javax.swing.JTextField tfLastName;
     // End of variables declaration//GEN-END:variables
-
-    private void close() {
-        WindowEvent winClosingEvent = new WindowEvent(this,WindowEvent.WINDOW_CLOSING);
-        Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(winClosingEvent);
-    }
 
     private void init() {
         try {
@@ -373,7 +432,7 @@ public class EditPerson extends javax.swing.JFrame {
             initTable();
         } catch (Exception e) {
             Logger.getLogger(EditPerson.class.getName()).log(Level.SEVERE, null, e);
-            MessageUtils.showErrorMessage("Unrecoverable error", "Cannot initiate the form");
+            MessageUtils.showErrorMessage("Smrt", "Ne radi karburator");
             System.exit(1);
         }
     }
@@ -384,7 +443,8 @@ public class EditPerson extends javax.swing.JFrame {
     }
 
     private void initRepository() throws Exception {
-
+        actorHandler = RepositoryFactory.getActorHandler();
+        directorHandler = RepositoryFactory.getDirectorHandler();
     }
 
     private void initTable() throws Exception {
@@ -412,6 +472,30 @@ public class EditPerson extends javax.swing.JFrame {
     }
 
     private void showPerson() {
-       
+        clearForm();
+        int selectedRow = tbPerson.getSelectedRow();
+        int selectedPersonID = (int) personTableModel.getValueAt(selectedRow, 0); 
+        
+        try {
+            Optional<Actor> optPerson = actorHandler.selectPerson(selectedPersonID);
+            if (optPerson.isPresent()) {
+                selectedPerson = optPerson.get();
+                fillForm(selectedPerson);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(EditPerson.class.getName()).log(Level.SEVERE, null, ex);
+            MessageUtils.showErrorMessage("Pogreška", "Ne mogu pokazati glumce!");
+        }
+    }
+    
+        private void fillForm(Actor person) {
+        tfFirstName.setText(person.firstName);
+        tfLastName.setText(person.lastName);
+        
+        if (person.type.equals(REDATELJ)) {
+            cbType.setSelectedIndex(0);
+        } else {
+            cbType.setSelectedIndex(1);
+        }       
     }
 }

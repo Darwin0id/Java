@@ -5,12 +5,83 @@
  */
 package hr.darwin;
 
+import hr.darwin.component.EditPerson;
+import hr.darwin.component.EditGenre;
+import hr.darwin.dal.RepositoryFactory;
+import hr.darwin.model.ActorTransferable;
+import hr.darwin.model.Genre;
+import hr.darwin.model.GenreTransferable;
+import hr.darwin.model.Movie;
+import hr.darwin.model.MovieTableModel;
+import hr.darwin.model.Actor;
+import hr.algebra.utils.FileUtils;
+import hr.algebra.utils.IconUtils;
+import hr.algebra.utils.MessageUtils;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.DefaultListModel;
+import javax.swing.DropMode;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JSpinner;
+import javax.swing.ListSelectionModel;
+import javax.swing.TransferHandler;
+import static javax.swing.TransferHandler.COPY;
+import javax.swing.text.JTextComponent;
+import hr.darwin.handler.actor.IActor;
+import hr.darwin.handler.genre.IGenre;
+import hr.darwin.handler.movie.IMovie;
+
 /**
  *
  * @author darwin
  */
 public class UserFrame extends javax.swing.JFrame {
 
+    private List<JComponent> validationFields;
+    private List<JLabel> errorLabels;
+    
+    private static final Random RANDOM = new Random();
+    private static final String DIR = "assets\\movies";
+    
+    private IMovie movieHandler;
+    private IActor personHandler;
+    private IGenre genreHandler;
+    private MovieTableModel movieTableModel;
+    
+    private Movie selectedMovie;
+    
+    private final List<Actor> newActros = new ArrayList<>();
+    private final List<Actor> newDirectors = new ArrayList<>();
+    private final List<Genre> newGenres = new ArrayList<>();
+    
+    private final Set<Actor> actors = new TreeSet<>();    
+    private final Set<Actor> directors = new TreeSet<>();
+    private final Set<Genre> genres = new TreeSet<>();
+    
+    private final DefaultListModel<Actor> allPersonModel = new DefaultListModel<>();
+    private final DefaultListModel<Actor> movieActrosModel = new DefaultListModel<>();
+    private final DefaultListModel<Actor> movieDirectorsModel = new DefaultListModel<>();
+    
+    private final DefaultListModel<Genre> allGenresModel = new DefaultListModel<>();
+    private final DefaultListModel<Genre> movieGenresModel = new DefaultListModel<>();
     /**
      * Creates new form UserFrame
      */
@@ -27,21 +98,452 @@ public class UserFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        jLabel1 = new javax.swing.JLabel();
+        tfTitle = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        taDescription = new javax.swing.JTextArea();
+        jLabel3 = new javax.swing.JLabel();
+        spDuration = new javax.swing.JSpinner();
+        lbIcon = new javax.swing.JLabel();
+        tfImagePath = new javax.swing.JTextField();
+        btnChoose = new javax.swing.JButton();
+        btnAdd = new javax.swing.JButton();
+        btnDelete = new javax.swing.JButton();
+        btnUpdate = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tbMovie = new javax.swing.JTable();
+        lbTitleError = new javax.swing.JLabel();
+        lbDurationError = new javax.swing.JLabel();
+        lbDescriptionError = new javax.swing.JLabel();
+        lbIconError = new javax.swing.JLabel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        lsAllPersons = new javax.swing.JList<>();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        lsMovieActros = new javax.swing.JList<>();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        lsMovieDirectors = new javax.swing.JList<>();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        lsMovieGenres = new javax.swing.JList<>();
+        jLabel7 = new javax.swing.JLabel();
+        jScrollPane7 = new javax.swing.JScrollPane();
+        lsAllGenres = new javax.swing.JList<>();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        menuEdit = new javax.swing.JMenu();
+        miEditMovie = new javax.swing.JMenuItem();
+        miEditActor = new javax.swing.JMenuItem();
+        miEditGenre = new javax.swing.JMenuItem();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                formComponentShown(evt);
+            }
+        });
+
+        jLabel1.setText("Naslov");
+
+        jLabel2.setText("Opis");
+
+        taDescription.setColumns(20);
+        taDescription.setLineWrap(true);
+        taDescription.setRows(5);
+        jScrollPane1.setViewportView(taDescription);
+
+        jLabel3.setText("Trajanje");
+
+        spDuration.setModel(new javax.swing.SpinnerNumberModel(0, 0, null, 1));
+
+        lbIcon.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/no_image.png"))); // NOI18N
+
+        tfImagePath.setEditable(false);
+        tfImagePath.setBackground(new java.awt.Color(204, 204, 204));
+
+        btnChoose.setText("Odaberi");
+        btnChoose.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnChooseActionPerformed(evt);
+            }
+        });
+
+        btnAdd.setText("Dodaj");
+        btnAdd.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddActionPerformed(evt);
+            }
+        });
+
+        btnDelete.setText("Obriši");
+        btnDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteActionPerformed(evt);
+            }
+        });
+
+        btnUpdate.setText("Ažuriraj");
+        btnUpdate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpdateActionPerformed(evt);
+            }
+        });
+
+        tbMovie.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        tbMovie.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tbMovieMouseClicked(evt);
+            }
+        });
+        tbMovie.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                tbMovieKeyReleased(evt);
+            }
+        });
+        jScrollPane2.setViewportView(tbMovie);
+
+        lbTitleError.setForeground(new java.awt.Color(255, 0, 0));
+
+        lbDurationError.setForeground(new java.awt.Color(255, 0, 0));
+
+        lbDescriptionError.setForeground(new java.awt.Color(255, 0, 0));
+
+        lbIconError.setForeground(new java.awt.Color(255, 0, 0));
+
+        jScrollPane3.setViewportView(lsAllPersons);
+
+        jScrollPane4.setViewportView(lsMovieActros);
+
+        jLabel4.setText("Osobe");
+
+        jLabel5.setText("Glumci");
+
+        jLabel6.setText("Redatelji");
+
+        jScrollPane5.setViewportView(lsMovieDirectors);
+
+        jScrollPane6.setViewportView(lsMovieGenres);
+
+        jLabel7.setText("Žanrovi");
+
+        jScrollPane7.setViewportView(lsAllGenres);
+
+        menuEdit.setText("Uredi");
+
+        miEditMovie.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.CTRL_MASK));
+        miEditMovie.setText("Film");
+        menuEdit.add(miEditMovie);
+
+        miEditActor.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
+        miEditActor.setText("Glumci");
+        miEditActor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miEditActorActionPerformed(evt);
+            }
+        });
+        menuEdit.add(miEditActor);
+
+        miEditGenre.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.CTRL_MASK));
+        miEditGenre.setText("Žanr");
+        miEditGenre.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miEditGenreActionPerformed(evt);
+            }
+        });
+        menuEdit.add(miEditGenre);
+
+        jMenuBar1.add(menuEdit);
+
+        setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1346, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(19, 19, 19)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(btnDelete, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(btnAdd, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 254, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(lbIcon, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(tfImagePath, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnChoose, javax.swing.GroupLayout.PREFERRED_SIZE, 144, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jScrollPane2))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lbIconError, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(4, 4, 4)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(2, 2, 2)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(18, 18, 18)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 193, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 421, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 21, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(tfTitle)
+                                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(lbDescriptionError, javax.swing.GroupLayout.DEFAULT_SIZE, 26, Short.MAX_VALUE)
+                                    .addComponent(lbTitleError, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(spDuration, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lbDurationError, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 330, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 956, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addComponent(lbIcon, javax.swing.GroupLayout.PREFERRED_SIZE, 342, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(tfImagePath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnChoose))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btnAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
+                        .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel1)
+                            .addComponent(lbIconError, javax.swing.GroupLayout.PREFERRED_SIZE, 21, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(tfTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lbTitleError, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lbDescriptionError, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(spDuration, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lbDurationError, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel7)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 149, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(27, 27, 27)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(jLabel5)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(jLabel6)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 410, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(21, 21, 21))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void formComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
+        init();
+    }//GEN-LAST:event_formComponentShown
+
+    private void tbMovieKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tbMovieKeyReleased
+        showMovie();
+        try {
+            loadAllPersonsModel();
+            loadMovieActrosModel();
+            loadMovieDirectorsModel();
+            loadAllGenresModel();
+            loadMovieGenresModel();
+        } catch (Exception ex) {
+            Logger.getLogger(UserFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_tbMovieKeyReleased
+
+    private void tbMovieMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbMovieMouseClicked
+        showMovie();
+        try {
+            loadAllPersonsModel();
+            loadMovieActrosModel();
+            loadMovieDirectorsModel();
+            loadAllGenresModel();
+            loadMovieGenresModel();
+        } catch (Exception ex) {
+            Logger.getLogger(UserFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_tbMovieMouseClicked
+
+    private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
+        if (formValid()) {
+            try {
+                String localPicturePath = uploadPicture();
+                Movie movie = new Movie(
+                        tfTitle.getText().trim(), 
+                        taDescription.getText().trim(), 
+                        localPicturePath, 
+                        (int)spDuration.getValue()
+                );
+                int movieCreate = movieHandler.createMovie(movie);
+                
+                if (movieCreate == 0) {
+                    MessageUtils.showErrorMessage("Pogreška", "Film postoji!");
+                } else {
+                    MessageUtils.showInformationMessage("Poruka u boci", "Film dodan!");   
+                    movieTableModel.setMovies(movieHandler.selectMovies());   
+                    clearForm();
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(UserFrame.class.getName()).log(Level.SEVERE, null, ex);
+                MessageUtils.showErrorMessage("Pogreška", "Nejde!");
+            }
+        }
+    }//GEN-LAST:event_btnAddActionPerformed
+
+    private void btnChooseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChooseActionPerformed
+        File file = FileUtils.uploadFile("Images", "jpg", "jpeg", "png");
+        if (file == null) {
+            return;
+        }
+        tfImagePath.setText(file.getAbsolutePath());
+        setIcon(lbIcon, file);
+    }//GEN-LAST:event_btnChooseActionPerformed
+
+    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+        if (selectedMovie == null) {
+            MessageUtils.showInformationMessage("Kriva kemija", "Odaberi filmić za deletinjo");
+            return;
+        }
+        
+        if (MessageUtils.showConfirmDialog(
+                "Čistim ormar",
+                "Stvarno želiš baciti film?") == JOptionPane.YES_OPTION) {
+            try {
+                Files.deleteIfExists(Paths.get(selectedMovie.getPicturePath()));
+                int movieDelete = movieHandler.deleteMovie(selectedMovie.getId());
+                
+                if (movieDelete == 0) {
+                    MessageUtils.showInformationMessage("Poruka u boci", "Filmić ti je bačen!");
+                    movieTableModel.setMovies(movieHandler.selectMovies());   
+                    clearForm();
+                }
+                
+            } catch (Exception ex) {
+                Logger.getLogger(UserFrame.class.getName()).log(Level.SEVERE, null, ex);
+                MessageUtils.showErrorMessage("Smrt", "Zalepljeni film!");
+            }
+        }
+    }//GEN-LAST:event_btnDeleteActionPerformed
+
+    private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
+        if (selectedMovie == null) {
+            MessageUtils.showInformationMessage("Kriva kemija", "Odaberi filmić za ažuriranje");
+            return;
+        }
+        
+        if (formValid()) {
+            try {
+                if (selectedMovie.getPicturePath() == null || !tfImagePath.getText().trim().equals(selectedMovie.getPicturePath())) {
+                    Files.deleteIfExists(Paths.get(selectedMovie.getPicturePath()));
+                    String localPicturePath = uploadPicture();
+                    selectedMovie.setPicturePath(localPicturePath);
+                }
+
+                selectedMovie.setTitle(tfTitle.getText().trim());
+                selectedMovie.setDescirption(taDescription.getText().trim());
+                selectedMovie.setDuration((int)spDuration.getValue());
+                
+                if (newActros.isEmpty()) {
+                    selectedMovie.setActros(new ArrayList<>());
+                } else {
+                    selectedMovie.setActros(newActros);
+                }
+                
+                if (newDirectors.isEmpty()) {
+                    selectedMovie.setDirector(new ArrayList<>());
+                } else {
+                    selectedMovie.setDirector(newDirectors);
+                }
+                
+                if (newGenres.isEmpty()) {
+                    selectedMovie.setGenre(new ArrayList<>());
+                } else {
+                    selectedMovie.setGenre(newGenres);
+                }
+                
+                movieHandler.updateMovie(selectedMovie);
+                
+                MessageUtils.showInformationMessage("Messaže", "Filmić ažuriran!");
+                movieTableModel.setMovies(movieHandler.selectMovies());   
+                clearForm();
+                
+            } catch (Exception ex) {
+                Logger.getLogger(UserFrame.class.getName()).log(Level.SEVERE, null, ex);
+                MessageUtils.showErrorMessage("Nejde", "Nema goriva!");
+            }
+        }
+    }//GEN-LAST:event_btnUpdateActionPerformed
+
+    private void miEditGenreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miEditGenreActionPerformed
+        EditGenre editGenre = new EditGenre();
+        editGenre.setVisible(true);
+        close();
+    }//GEN-LAST:event_miEditGenreActionPerformed
+
+    private void miEditActorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miEditActorActionPerformed
+        EditPerson editActor = new EditPerson();
+        editActor.setVisible(true);
+        close();
+    }//GEN-LAST:event_miEditActorActionPerformed
 
     /**
      * @param args the command line arguments
@@ -69,6 +571,7 @@ public class UserFrame extends javax.swing.JFrame {
             java.util.logging.Logger.getLogger(UserFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
+        //</editor-fold>
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -79,5 +582,318 @@ public class UserFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAdd;
+    private javax.swing.JButton btnChoose;
+    private javax.swing.JButton btnDelete;
+    private javax.swing.JButton btnUpdate;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JScrollPane jScrollPane7;
+    private javax.swing.JLabel lbDescriptionError;
+    private javax.swing.JLabel lbDurationError;
+    private javax.swing.JLabel lbIcon;
+    private javax.swing.JLabel lbIconError;
+    private javax.swing.JLabel lbTitleError;
+    private javax.swing.JList<Genre> lsAllGenres;
+    private javax.swing.JList<Actor> lsAllPersons;
+    private javax.swing.JList<Actor> lsMovieActros;
+    private javax.swing.JList<Actor> lsMovieDirectors;
+    private javax.swing.JList<Genre> lsMovieGenres;
+    private javax.swing.JMenu menuEdit;
+    private javax.swing.JMenuItem miEditActor;
+    private javax.swing.JMenuItem miEditGenre;
+    private javax.swing.JMenuItem miEditMovie;
+    private javax.swing.JSpinner spDuration;
+    private javax.swing.JTextArea taDescription;
+    private javax.swing.JTable tbMovie;
+    private javax.swing.JTextField tfImagePath;
+    private javax.swing.JTextField tfTitle;
     // End of variables declaration//GEN-END:variables
+
+    private void close() {
+        WindowEvent winClosingEvent = new WindowEvent(this,WindowEvent.WINDOW_CLOSING);
+        Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(winClosingEvent);
+    }
+
+    private void init() {
+        try {
+            initValidation();
+            initRepository();
+            initTable();
+            initDragNDrop();
+        } catch (Exception ex) {
+            Logger.getLogger(UserFrame.class.getName()).log(Level.SEVERE, null, ex);
+            MessageUtils.showErrorMessage("Smrt", "Gotov");
+            System.exit(1);
+        }
+    }
+
+    private void initValidation() {
+        validationFields = Arrays.asList(tfTitle, taDescription, spDuration, tfImagePath);
+        errorLabels = Arrays.asList(lbTitleError, lbDescriptionError, lbDurationError, lbIconError);
+    }
+
+    private void initRepository() {
+        movieHandler = RepositoryFactory.getMovieHandler();
+        personHandler = RepositoryFactory.getActorHandler();
+        genreHandler = RepositoryFactory.getGenreHandler();
+    }
+
+    private void initTable() throws Exception {
+        tbMovie.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tbMovie.setAutoCreateRowSorter(true);
+        tbMovie.setRowHeight(25);
+        movieTableModel = new MovieTableModel(movieHandler.selectMovies());
+        tbMovie.setModel(movieTableModel);
+    }
+    
+    private void loadAllPersonsModel() throws Exception {
+        allPersonModel.clear();
+        personHandler.selectEmployee().forEach(action -> allPersonModel.addElement(action));
+        lsAllPersons.setModel(allPersonModel);
+    }
+    
+    private void loadMovieActrosModel() {
+        movieActrosModel.clear();
+        actors.forEach(action -> movieActrosModel.addElement(action));
+        lsMovieActros.setModel(movieActrosModel);
+    }
+    
+    
+    private void loadMovieDirectorsModel() {
+        movieDirectorsModel.clear();
+        directors.forEach(action -> movieDirectorsModel.addElement(action));
+        lsMovieDirectors.setModel(movieDirectorsModel);
+    }
+    
+    private void loadAllGenresModel() throws Exception {
+        allGenresModel.clear();
+        genreHandler.selectGenres().forEach(action -> allGenresModel.addElement(action));
+        lsAllGenres.setModel(allGenresModel);
+    }
+
+    private void loadMovieGenresModel() {
+        movieGenresModel.clear();
+        genres.forEach(action -> movieGenresModel.addElement(action));
+        lsMovieGenres.setModel(movieGenresModel);
+    }
+
+    private void initDragNDrop() {
+        lsAllPersons.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        lsAllPersons.setDragEnabled(true);
+        lsAllPersons.setTransferHandler(new ExportTransferHandler());
+        
+        lsAllGenres.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        lsAllGenres.setDragEnabled(true);
+        lsAllGenres.setTransferHandler(new ExportTransferGenreHandler());
+        
+        lsMovieActros.setDropMode(DropMode.ON);
+        lsMovieActros.setTransferHandler(new ImportTransferHandler());
+
+        lsMovieDirectors.setDropMode(DropMode.ON);
+        lsMovieDirectors.setTransferHandler(new ImportTransferDirectorHandler());
+        
+        lsMovieGenres.setDropMode(DropMode.ON);
+        lsMovieGenres.setTransferHandler(new ImportTransferGenreHandler());
+    }
+
+    private void showMovie() {
+        clearForm();
+        int selectedRow = tbMovie.getSelectedRow();		
+        int rowIndex = tbMovie.convertRowIndexToModel(selectedRow);
+        int selectedMovieID = (int) movieTableModel.getValueAt(rowIndex, 0);
+        
+        try {
+            Optional<Movie> optMovie = movieHandler.selectMovie(selectedMovieID);
+            if (optMovie.isPresent()) {
+                selectedMovie = optMovie.get();
+                fillForm(selectedMovie);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(UserFrame.class.getName()).log(Level.SEVERE, null, ex);
+            MessageUtils.showErrorMessage("Pogreška", "Prazna ti je polica!");
+        }
+    }
+
+    private void clearForm() {
+        validationFields.forEach((e) -> {
+            if (e instanceof JTextComponent) {
+                ((JTextComponent) e).setText("");
+            } else if (e instanceof JSpinner) {
+                ((JSpinner) e).setValue(0);
+            }
+        });
+        errorLabels.forEach(e -> e.setText(""));
+        lbIcon.setIcon(new ImageIcon(getClass().getResource("/assets/no_image.png")));
+        selectedMovie = null;
+    }
+
+    private void fillForm(Movie selectedMovie) {
+        actors.clear();
+        directors.clear();
+        genres.clear();
+        
+        if (selectedMovie.getPicturePath() != null && Files.exists(Paths.get(selectedMovie.getPicturePath()))) {
+            tfImagePath.setText(selectedMovie.getPicturePath());
+            setIcon(lbIcon, new File(selectedMovie.getPicturePath()));
+        } else {
+            tfImagePath.setText("");
+            lbIcon.setIcon(new ImageIcon(getClass().getResource("/assets/no_image.png")));
+        }
+        
+        tfTitle.setText(selectedMovie.getTitle());
+        taDescription.setText(selectedMovie.getDescirption());
+        spDuration.setValue(selectedMovie.getDuration());
+        selectedMovie.getActors().forEach(action -> actors.add(action));
+        selectedMovie.getDirector().forEach(action -> directors.add(action));
+        selectedMovie.getGenre().forEach(action -> genres.add(action));
+    }
+
+    private void setIcon(JLabel lbIcon, File file) {
+        try {
+            lbIcon.setIcon(IconUtils.createIcon(file.getAbsolutePath(), lbIcon.getWidth(), lbIcon.getHeight()));
+        } catch (IOException ex) {
+            Logger.getLogger(UserFrame.class.getName()).log(Level.SEVERE, null, ex);
+            MessageUtils.showErrorMessage("Pogreška", "Nema ikone!");
+        }
+    }
+
+    private boolean formValid() {
+        boolean ok = true;
+
+        for (int i = 0; i < validationFields.size(); i++) {
+            if (validationFields.get(i) instanceof JTextComponent) {
+                ok &= !((JTextComponent)validationFields.get(i)).getText().trim().isEmpty();         
+                errorLabels.get(i).setText(((JTextComponent)validationFields.get(i)).getText().trim().isEmpty() ? "X" : "");
+            } else if (validationFields.get(i) instanceof JSpinner) {
+                ok &= !((int)((JSpinner)validationFields.get(i)).getValue() == 0);
+                errorLabels.get(i).setText((int)((JSpinner)validationFields.get(i)).getValue() == 0 ? "X" : "");
+            }
+        }
+
+        return ok;
+    }
+
+    private String uploadPicture() throws IOException {
+        String picturePath = tfImagePath.getText().trim();
+        String ext = picturePath.substring(picturePath.lastIndexOf("."));
+        String pictureName = Math.abs(RANDOM.nextInt()) + ext;
+        String localPicturePath = DIR + File.separator + pictureName;
+        FileUtils.copy(picturePath, localPicturePath);
+        return localPicturePath;
+    }
+    
+    private class ExportTransferGenreHandler extends TransferHandler {
+
+        @Override
+        public int getSourceActions(JComponent c) {
+            return COPY;
+        }
+
+        @Override
+        public Transferable createTransferable(JComponent c) {
+            return new GenreTransferable(lsAllGenres.getSelectedValue());
+        }
+    }
+
+    private class ImportTransferGenreHandler extends TransferHandler {
+
+        @Override
+        public boolean canImport(TransferSupport support) {
+            return support.isDataFlavorSupported(GenreTransferable.GENRE_FLAVOR);
+        }
+
+        @Override
+        public boolean importData(TransferSupport support) {
+            Transferable transferable = support.getTransferable();
+            try {
+                Genre add = (Genre) transferable.getTransferData(GenreTransferable.GENRE_FLAVOR);
+                if(genres.add(add)){
+                    newGenres.add(add);
+                    loadMovieGenresModel();
+                    return true;
+                }
+            } catch (UnsupportedFlavorException | IOException ex) {
+                Logger.getLogger(UserFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return false;
+        }
+    }
+    
+    private class ExportTransferHandler extends TransferHandler {
+
+        @Override
+        public int getSourceActions(JComponent c) {
+            return COPY;
+        }
+
+        @Override
+        public Transferable createTransferable(JComponent c) {
+            return new ActorTransferable(lsAllPersons.getSelectedValue());
+        }
+    }
+
+    private class ImportTransferHandler extends TransferHandler {
+
+        @Override
+        public boolean canImport(TransferSupport support) {
+            return support.isDataFlavorSupported(ActorTransferable.PERSON_FLAVOR);
+        }
+
+        @Override
+        public boolean importData(TransferSupport support) {
+            Transferable transferable = support.getTransferable();
+            try {
+                Actor actor = (Actor) transferable.getTransferData(ActorTransferable.PERSON_FLAVOR);
+                
+                if (actors.add(actor)) {
+                    newActros.add(actor);
+                    loadMovieActrosModel();
+                    return true;
+                }
+                
+            } catch (UnsupportedFlavorException | IOException ex) {
+                Logger.getLogger(UserFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return false;
+        }
+    }
+    
+    private class ImportTransferDirectorHandler extends TransferHandler {
+        @Override
+        public boolean canImport(TransferSupport support) {
+            return support.isDataFlavorSupported(ActorTransferable.PERSON_FLAVOR);
+        }
+
+        @Override
+        public boolean importData(TransferSupport support) {
+            Transferable transferable = support.getTransferable();
+            try {
+                Actor director = (Actor) transferable.getTransferData(ActorTransferable.PERSON_FLAVOR);
+                
+                if (directors.add(director)) {
+                    newDirectors.add(director);
+                    loadMovieDirectorsModel();
+                    return true;
+                }
+                
+            } catch (UnsupportedFlavorException | IOException ex) {
+                Logger.getLogger(UserFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return false;
+        }
+    }
+
 }

@@ -6,12 +6,12 @@
 package hr.darwin.component;
 
 import hr.algebra.utils.FrameUtils;
-import hr.darwin.LoginFrame;
 import hr.darwin.UserFrame;
 import hr.darwin.dal.RepositoryFactory;
 import hr.algebra.utils.MessageUtils;
-import java.awt.Toolkit;
-import java.awt.event.WindowEvent;
+import hr.darwin.handler.genre.IGenre;
+import hr.darwin.model.Genre;
+import hr.darwin.model.GenreTableModel;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +30,11 @@ public class EditGenre extends javax.swing.JFrame {
 
     private List<JTextComponent> validationFields;
     private List<JLabel> errorLabels;
+    
+    private IGenre genreHandler;
+    private GenreTableModel genreTableModel;
+    private Genre selectedGenre;
+    
         
     /**
      * Creates new form EditGenre
@@ -55,14 +60,12 @@ public class EditGenre extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         tbGenre = new javax.swing.JTable();
         lblNameError = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
         jMenuBar1 = new javax.swing.JMenuBar();
         menuEdit = new javax.swing.JMenu();
         miEditMovie = new javax.swing.JMenuItem();
         miEditActor = new javax.swing.JMenuItem();
         miEditGenre = new javax.swing.JMenuItem();
-        menuAction = new javax.swing.JMenu();
-        miLogout = new javax.swing.JMenuItem();
-        miExit = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -71,23 +74,27 @@ public class EditGenre extends javax.swing.JFrame {
             }
         });
 
-        jLabel1.setText("Name");
+        jLabel1.setText("Naziv");
 
-        btnAdd.setText("Add");
+        btnAdd.setBackground(new java.awt.Color(236, 97, 97));
+        btnAdd.setForeground(new java.awt.Color(255, 255, 255));
+        btnAdd.setText("Dodaj");
         btnAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnAddActionPerformed(evt);
             }
         });
 
-        btnUpdate.setText("Update");
+        btnUpdate.setText("Ažuriraj");
+        btnUpdate.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(236, 97, 97), 2));
         btnUpdate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnUpdateActionPerformed(evt);
             }
         });
 
-        btnDelete.setText("Delete");
+        btnDelete.setText("Obriši");
+        btnDelete.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(236, 97, 97), 2));
         btnDelete.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnDeleteActionPerformed(evt);
@@ -119,10 +126,23 @@ public class EditGenre extends javax.swing.JFrame {
 
         lblNameError.setForeground(new java.awt.Color(255, 0, 0));
 
-        menuEdit.setText("Edit");
+        jPanel1.setBackground(new java.awt.Color(236, 97, 97));
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 15, Short.MAX_VALUE)
+        );
+
+        menuEdit.setText("Uredi");
 
         miEditMovie.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_M, java.awt.event.InputEvent.CTRL_MASK));
-        miEditMovie.setText("Edit Movie");
+        miEditMovie.setText("Film");
         miEditMovie.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 miEditMovieActionPerformed(evt);
@@ -131,7 +151,7 @@ public class EditGenre extends javax.swing.JFrame {
         menuEdit.add(miEditMovie);
 
         miEditActor.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
-        miEditActor.setText("Edit Person");
+        miEditActor.setText("Glumci");
         miEditActor.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 miEditActorActionPerformed(evt);
@@ -140,32 +160,10 @@ public class EditGenre extends javax.swing.JFrame {
         menuEdit.add(miEditActor);
 
         miEditGenre.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.CTRL_MASK));
-        miEditGenre.setText("Edit Genre");
+        miEditGenre.setText("Žanr");
         menuEdit.add(miEditGenre);
 
         jMenuBar1.add(menuEdit);
-
-        menuAction.setText("Action");
-
-        miLogout.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
-        miLogout.setText("Logout");
-        miLogout.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miLogoutActionPerformed(evt);
-            }
-        });
-        menuAction.add(miLogout);
-
-        miExit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_MASK));
-        miExit.setText("Exit");
-        miExit.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                miExitActionPerformed(evt);
-            }
-        });
-        menuAction.add(miExit);
-
-        jMenuBar1.add(menuAction);
 
         setJMenuBar(jMenuBar1);
 
@@ -176,22 +174,25 @@ public class EditGenre extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jScrollPane1)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(tfName, javax.swing.GroupLayout.PREFERRED_SIZE, 435, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lblNameError))
+                                .addGap(8, 8, 8)
+                                .addComponent(jLabel1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(btnAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(btnUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(jLabel1))
-                                .addGap(10, 10, 10)
-                                .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(tfName)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)))
+                        .addComponent(lblNameError, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(8, 8, 8))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(btnAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10)
+                        .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 166, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -199,19 +200,21 @@ public class EditGenre extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(tfName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblNameError))
-                .addGap(32, 32, 32)
+                    .addComponent(lblNameError, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnAdd)
                     .addComponent(btnUpdate)
                     .addComponent(btnDelete))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(23, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
@@ -223,30 +226,62 @@ public class EditGenre extends javax.swing.JFrame {
         FrameUtils.exit(this);
     }//GEN-LAST:event_miEditActorActionPerformed
 
-    private void miLogoutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miLogoutActionPerformed
-        LoginFrame login = new LoginFrame();
-        login.setVisible(true);
-        FrameUtils.exit(this);
-    }//GEN-LAST:event_miLogoutActionPerformed
-
-    private void miExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miExitActionPerformed
-        FrameUtils.exit(this);
-    }//GEN-LAST:event_miExitActionPerformed
-
     private void miEditMovieActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miEditMovieActionPerformed
+        UserFrame frama = new UserFrame();
+        frama.setVisible(true);
         FrameUtils.exit(this);
     }//GEN-LAST:event_miEditMovieActionPerformed
 
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
-        
+         if (formValid()) {
+            try {
+                selectedGenre.setName(tfName.getText().trim());
+                int genreUpdate = genreHandler.updateGenre(selectedGenre);
+            
+                if (genreUpdate == 0) {
+                    MessageUtils.showInformationMessage("Message", "Žanr je dodan!"); 
+                    genreTableModel.setGenres(genreHandler.selectGenres());
+                    clearForm();
+                }
+            } catch (Exception e) {
+                Logger.getLogger(EditPerson.class.getName()).log(Level.SEVERE, null, e);
+                MessageUtils.showErrorMessage("Error", "Nejde!");
+            }
+        }
     }//GEN-LAST:event_btnAddActionPerformed
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
-       
+        if (formValid()) {
+            try {
+                selectedGenre.setName(tfName.getText().trim());
+                int genreUpdate = genreHandler.updateGenre(selectedGenre);
+            
+                if (genreUpdate == 0) {
+                    MessageUtils.showInformationMessage("Message", "Ažuriran!!"); 
+                    genreTableModel.setGenres(genreHandler.selectGenres());
+                    clearForm();
+                }
+            } catch (Exception e) {
+                Logger.getLogger(EditPerson.class.getName()).log(Level.SEVERE, null, e);
+                MessageUtils.showErrorMessage("Error", "Ne mogu ažurirati!");
+            }
+        }
     }//GEN-LAST:event_btnUpdateActionPerformed
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
-       
+          if (MessageUtils.showConfirmDialog("Obriši", "Stvarno to želiš?") == JOptionPane.YES_OPTION) {
+            try {
+                int genreDelete = genreHandler.deleteGenre(selectedGenre.getId());
+                if (genreDelete == 0) {
+                    MessageUtils.showInformationMessage("Message", "Bravo!");
+                    genreTableModel.setGenres(genreHandler.selectGenres());
+                    clearForm();
+                }
+            } catch (Exception e) {
+                Logger.getLogger(EditPerson.class.getName()).log(Level.SEVERE, null, e);
+                MessageUtils.showErrorMessage("Error", "Pogreška!");
+            }
+        }
     }//GEN-LAST:event_btnDeleteActionPerformed
 
     private void formComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
@@ -302,23 +337,17 @@ public class EditGenre extends javax.swing.JFrame {
     private javax.swing.JButton btnUpdate;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblNameError;
-    private javax.swing.JMenu menuAction;
     private javax.swing.JMenu menuEdit;
     private javax.swing.JMenuItem miEditActor;
     private javax.swing.JMenuItem miEditGenre;
     private javax.swing.JMenuItem miEditMovie;
-    private javax.swing.JMenuItem miExit;
-    private javax.swing.JMenuItem miLogout;
     private javax.swing.JTable tbGenre;
     private javax.swing.JTextField tfName;
     // End of variables declaration//GEN-END:variables
 
-    private void close() {
-        WindowEvent winClosingEvent = new WindowEvent(this,WindowEvent.WINDOW_CLOSING);
-        Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(winClosingEvent);
-    }
 
     private void init() {
         try {
@@ -338,7 +367,7 @@ public class EditGenre extends javax.swing.JFrame {
     }
 
     private void initRepository() throws Exception {
-        
+         genreHandler = RepositoryFactory.getGenreHandler();
     }
 
     private void initTable() throws Exception {
@@ -358,12 +387,30 @@ public class EditGenre extends javax.swing.JFrame {
         return ok;
     }
 
-    private void clearForm() {
+     private void clearForm() {
         validationFields.forEach(e -> e.setText(""));
         errorLabels.forEach(e -> e.setText(""));
+        selectedGenre = null;
     }
 
     private void showGenre() {
-       
+        clearForm();
+        int selectedRow = tbGenre.getSelectedRow();
+        int selectedGenreID = (int) genreTableModel.getValueAt(selectedRow, 0); 
+        
+        try {
+            Optional<Genre> optGenre = genreHandler.selectGenre(selectedGenreID);
+            if (optGenre.isPresent()) {
+                selectedGenre = optGenre.get();
+                fillForm(selectedGenre);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(EditPerson.class.getName()).log(Level.SEVERE, null, ex);
+            MessageUtils.showErrorMessage("Pogreška", "Daj mi nekaj za jest da morem!");
+        }
+    }
+
+    private void fillForm(Genre selectedGenre) {
+        tfName.setText(selectedGenre.getName());
     }
 }
